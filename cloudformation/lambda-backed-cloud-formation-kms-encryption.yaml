@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Transform: 'AWS::Serverless-2016-10-31'
+
+Description: Demonstration of encryption using KMS in a CloudFormation Template
+
+Parameters:
+  SuperSecretThingKey:
+    Description: Some password or other thing that has to be secure
+    Type: 'String'
+    Default: SuperSecretThing
+
+  SuperSecretThingValue:
+    Description: Some password or other thing that has to be secure
+    Type: 'String'
+    NoEcho: True
+
+Resources:
+  EncryptedSuperSecretThing:
+    Type: 'AWS::CloudFormation::CustomResource'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt LambdaEncryptionResource.Arn
+      KeyId: !GetAtt KmsKeyId.Arn
+      PlainText:
+        SuperSecretThingKey: !Ref SuperSecretThingKey
+        SuperSecretThingValue: !Ref SuperSecretThingValue
+
+  KmsKeyId:
+    Type: 'AWS::KMS::Key'
+    Properties:
+      EnableKeyRotation: True
+      KeyPolicy:
+        Id: 'key-default-1'
+        Version: '2012-10-17'
+        Statement:
+        - Action: 'kms:*'
+          Effect: Allow
+          Principal:
+            AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+          Resource:
+            - '*'
+          Sid: Enable root IAM KMS User Permissions
+        - Action: 'kms:Encrypt'
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt LambdaEncryptionRole.Arn
+          Resource: '*'
+          Sid: Enable Encryption
+        - Action: 'kms:Decrypt'
+          Effect: Allow
+          Principal:
+            AWS: !GetAtt LambdaDecryptionRole.Arn
+          Resource: '*'
+          Sid: Enable Decryption
+
+  LambdaEncryptionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+
+  LambdaDecryptionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambdaExecute
+
+  LambdaEncryptionResource:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: 'lambda_function.lambda_handler'
+      Runtime: 'python2.7'
+      CodeUri: '../lambda-functions/encrypter'
+      MemorySize: 128
+      Timeout: 10
+      KmsKeyArn: !GetAtt 'KmsKeyId.Arn'
+      Role: !GetAtt LambdaEncryptionRole.Arn
+
+  LambdaDecryptionResource:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: 'lambda_function.lambda_handler'
+      Runtime: 'python2.7'
+      CodeUri: '../lambda-functions/decrypter'
+      MemorySize: 128
+      Timeout: 20
+      KmsKeyArn: !GetAtt 'KmsKeyId.Arn'
+      Role: !GetAtt LambdaDecryptionRole.Arn
+      Environment:
+        Variables:
+          SecretParam: !GetAtt EncryptedSuperSecretThing.CipherText
+
+Outputs:
+  EncryptedSuperSecretThing:
+    Value: !GetAtt EncryptedSuperSecretThing.CipherText
+    Description: KMS encrypted value of SuperSecretThing (Base64 encoded)
+
+  LambdaDecryptionFunctionName:
+    Description: Name of Decrypt Lambda Function
+    Value: !Ref LambdaDecryptionResource

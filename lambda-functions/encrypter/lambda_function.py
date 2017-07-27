@@ -60,7 +60,7 @@ def lambda_handler(event, context):
         client = boto3.client('kms')
         encrypted = client.encrypt(
             KeyId=event['ResourceProperties']['KeyId'],
-            Plaintext=event['ResourceProperties']['PlainText']
+            Plaintext=json.dumps(event['ResourceProperties']['PlainText'])
         )
 
         response['Data'] = {
