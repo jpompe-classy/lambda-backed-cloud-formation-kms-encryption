@@ -106,7 +106,80 @@ fi
 aws s3 rm s3://$S3_BUCKET/ --recursive
 aws s3api delete-bucket --bucket $S3_BUCKET
 rm /tmp/decrypted_secret.txt
+```
 
+##### Sample Demo Output
+```bash
+env AWS_DEFAULT_REGION=us-west-2 ./demo.sh
+++ cat /dev/urandom
+++ LC_CTYPE=C
+++ tr -dc a-z0-9-
+++ fold -w 62
+++ head -n 1
++ S3_BUCKET=3k2dm5evbj32hlffkmbrun2mkf0z7wxh7vdrit8yidpkv65iw10y5zu68kj38q
++ [[ 3 == \- ]]
++ STACK_NAME=lambda-backed-cloud-formation-kms-encryption
++ aws s3api create-bucket --bucket 3k2dm5evbj32hlffkmbrun2mkf0z7wxh7vdrit8yidpkv65iw10y5zu68kj38q --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
+{
+    "Location": "http://3k2dm5evbj32hlffkmbrun2mkf0z7wxh7vdrit8yidpkv65iw10y5zu68kj38q.s3.amazonaws.com/"
+}
++ aws cloudformation package --template-file cloudformation/lambda-backed-cloud-formation-kms-encryption.yaml --s3-bucket 3k2dm5evbj32hlffkmbrun2mkf0z7wxh7vdrit8yidpkv65iw10y5zu68kj38q --output-template-file cloudformation/lambda-backed-cloud-formation-kms-encryption-packaged.yaml
+Uploading to 8fdd52a226d4d15923897a52a0720e19  320 / 320.0  (100.00%)%)
+Successfully packaged artifacts and wrote output template to file cloudformation/lambda-backed-cloud-formation-kms-encryption-packaged.yaml.
+Execute the following command to deploy the packaged template
+aws cloudformation deploy --template-file /Users/jpompe/Scratch/lambda-backed-cloud-formation-kms-encryption/cloudformation/lambda-backed-cloud-formation-kms-encryption-packaged.yaml --stack-name <YOUR STACK NAME>
+++ cat /dev/urandom
+++ LC_CTYPE=C
+++ tr -dc a-zA-Z0-9
+++ fold -w 256
+++ head -n 1
++ ECRET=nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh
++ aws cloudformation deploy --template-file cloudformation/lambda-backed-cloud-formation-kms-encryption-packaged.yaml --stack-name lambda-backed-cloud-formation-kms-encryption --capabilities CAPABILITY_IAM --parameter-overrides SuperSecretThingKey=SuperSecretThing SuperSecretThingValue=nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh
+Waiting for changeset to be created..
+Waiting for stack create/update to complete
+Successfully created/updated stack - lambda-backed-cloud-formation-kms-encryption
+++ aws cloudformation describe-stacks --stack-name lambda-backed-cloud-formation-kms-encryption --query 'Stacks[0].Outputs[?OutputKey==`LambdaDecryptionFunctionName`].OutputValue' --output text
++ aws lambda invoke --function-name lambda-backed-cloud-forma-LambdaDecryptionResource-5OVKPFASQB1S /tmp/decrypted_secret.txt
+{
+    "StatusCode": 200
+}
+++ cat /tmp/decrypted_secret.txt
++ [[ "{\"SuperSecretThingKey\": \"SuperSecretThing\", \"SuperSecretThingValue\": \"nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh\"}" == \"\{\\\"\S\u\p\e\r\S\e\c\r\e\t\T\h\i\n\g\K\e\y\\\"\:\ \\\"\S\u\p\e\r\S\e\c\r\e\t\T\h\i\n\g\\\"\,\ \\\"\S\u\p\e\r\S\e\c\r\e\t\T\h\i\n\g\V\a\l\u\e\\\"\:\ \\\"\n\v\E\U\f\J\L\F\v\3\d\g\n\9\J\T\0\8\U\M\u\E\T\N\I\b\Z\c\w\j\G\w\e\h\E\f\L\V\L\n\P\t\O\2\n\4\s\Z\9\F\Q\u\I\8\M\6\T\i\L\i\5\N\g\F\6\c\v\T\N\G\t\u\z\f\b\K\u\6\J\O\N\a\u\e\R\u\Z\F\9\K\H\h\Y\g\L\U\x\V\R\R\V\X\L\p\D\Y\5\A\k\Q\q\5\q\R\r\C\y\c\t\v\d\5\z\T\J\V\E\s\g\a\F\l\i\m\k\G\k\S\h\K\k\U\C\i\2\7\M\o\3\p\W\Y\d\K\D\R\Q\o\l\5\K\Q\t\D\p\M\U\S\Y\k\q\M\U\H\s\k\N\W\1\L\w\S\j\K\U\M\m\B\C\r\p\z\D\Y\W\c\Q\w\Y\M\W\I\x\R\O\F\8\J\F\O\0\d\9\F\h\v\o\s\x\U\b\K\0\3\Y\P\F\F\q\7\w\L\s\2\S\b\F\s\n\M\v\y\G\3\t\M\e\6\4\O\N\2\E\u\X\h\\\"\}\" ]]
++ echo SUCCESS
+SUCCESS
++ echo stored secret value was '$echo $ECRET: nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh'
+stored secret value was $echo $ECRET: nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh
+++ cat /tmp/decrypted_secret.txt
++ echo returned value is '$\(cat /tmp/decrypted_secret.txt\): "{\"SuperSecretThingKey\": \"SuperSecretThing\", \"SuperSecretThingValue\": \"nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh\"}"'
+returned value is $\(cat /tmp/decrypted_secret.txt\): "{\"SuperSecretThingKey\": \"SuperSecretThing\", \"SuperSecretThingValue\": \"nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh\"}"
++ env ECRET=nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh python -c 'import ast
+import os
+import json
+with open('\''/tmp/decrypted_secret.txt'\'', '\''r'\'') as infile:
+    returned_data = ast.literal_eval(json.load(infile))
+print returned_data['\''SuperSecretThingValue'\'']
+print os.getenv('\''ECRET'\'')
+secrets = {}
+if os.getenv('\''ECRET'\'') == returned_data['\''SuperSecretThingValue'\'']:
+    print '\''SUCESSS'\''
+    print '\''stored secret value: {}'\''.format(os.getenv('\''ECRET'\''))
+    print '\''returned value: {}'\''.format(returned_data['\''SuperSecretThingValue'\''])
+    print '\''full response: {}'\''.format(returned_data)
+    secrets[returned_data['\''SuperSecretThingKey'\'']] = returned_data['\''SuperSecretThingValue'\'']
+    print json.dumps(secrets)
+'
+nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh
+nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh
+SUCESSS
+stored secret value: nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh
+returned value: nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh
+full response: {'SuperSecretThingKey': 'SuperSecretThing', 'SuperSecretThingValue': 'nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh'}
+{"SuperSecretThing": "nvEUfJLFv3dgn9JT08UMuETNIbZcwjGwehEfLVLnPtO2n4sZ9FQuI8M6TiLi5NgF6cvTNGtuzfbKu6JONaueRuZF9KHhYgLUxVRRVXLpDY5AkQq5qRrCyctvd5zTJVEsgaFlimkGkShKkUCi27Mo3pWYdKDRQol5KQtDpMUSYkqMUHskNW1LwSjKUMmBCrpzDYWcQwYMWIxROF8JFO0d9FhvosxUbK03YPFFq7wLs2SbFsnMvyG3tMe64ON2EuXh"}
++ aws s3 rm s3://3k2dm5evbj32hlffkmbrun2mkf0z7wxh7vdrit8yidpkv65iw10y5zu68kj38q/ --recursive
+delete: s3://3k2dm5evbj32hlffkmbrun2mkf0z7wxh7vdrit8yidpkv65iw10y5zu68kj38q/8fdd52a226d4d15923897a52a0720e19
+delete: s3://3k2dm5evbj32hlffkmbrun2mkf0z7wxh7vdrit8yidpkv65iw10y5zu68kj38q/faa7689521c9ea18cf79ed76322d804c
++ aws s3api delete-bucket --bucket 3k2dm5evbj32hlffkmbrun2mkf0z7wxh7vdrit8yidpkv65iw10y5zu68kj38q
++ rm /tmp/decrypted_secret.txt
 ```
 
 ## Using AWS KMS to Encrypt Values in CloudFormation Stacks
