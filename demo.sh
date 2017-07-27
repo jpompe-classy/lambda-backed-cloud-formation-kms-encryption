@@ -36,18 +36,21 @@ if [[ "$(cat /tmp/decrypted_secret.txt)" == "\"{\\\"SuperSecretThingKey\\\": \\\
   echo SUCCESS
   echo stored secret value was "\$echo \$ECRET: $ECRET"
   echo returned value is "$\(cat /tmp/decrypted_secret.txt\): $(cat /tmp/decrypted_secret.txt)"
-  python -c "import ast
+  env ECRET=$ECRET python -c "import ast
 import os
 import json
 with open('/tmp/decrypted_secret.txt', 'r') as infile:
     returned_data = ast.literal_eval(json.load(infile))
 print returned_data['SuperSecretThingValue']
 print os.getenv('ECRET')
+secrets = {}
 if os.getenv('ECRET') == returned_data['SuperSecretThingValue']:
     print 'SUCESSS'
-    print 'stored secret value: {}'.format(os.getenv("ECRET"))
+    print 'stored secret value: {}'.format(os.getenv('ECRET'))
     print 'returned value: {}'.format(returned_data['SuperSecretThingValue'])
     print 'full response: {}'.format(returned_data)
+    secrets[returned_data['SuperSecretThingKey']] = returned_data['SuperSecretThingValue']
+    print json.dumps(secrets)
 "
 else
   echo FAILURE
