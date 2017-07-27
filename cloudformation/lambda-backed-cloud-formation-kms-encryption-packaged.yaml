@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Demonstration of encryption using KMS in a CloudFormation Template
+Outputs:
+  EncryptedSuperSecretThing:
+    Description: KMS encrypted value of SuperSecretThing (Base64 encoded)
+    Value:
+      Fn::GetAtt:
+      - EncryptedSuperSecretThing
+      - CipherText
+  LambdaDecryptionFunctionName:
+    Description: Name of Decrypt Lambda Function
+    Value:
+      Ref: LambdaDecryptionResource
+Parameters:
+  SuperSecretThingKey:
+    Default: SuperSecretThing
+    Description: Some password or other thing that has to be secure
+    Type: String
+  SuperSecretThingValue:
+    Description: Some password or other thing that has to be secure
+    NoEcho: true
+    Type: String
+Resources:
+  EncryptedSuperSecretThing:
+    Properties:
+      KeyId:
+        Fn::GetAtt:
+        - KmsKeyId
+        - Arn
+      PlainText:
+        SuperSecretThingKey:
+          Ref: SuperSecretThingKey
+        SuperSecretThingValue:
+          Ref: SuperSecretThingValue
+      ServiceToken:
+        Fn::GetAtt:
+        - LambdaEncryptionResource
+        - Arn
+    Type: AWS::CloudFormation::CustomResource
+    Version: '1.0'
+  KmsKeyId:
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Id: key-default-1
+        Statement:
+        - Action: kms:*
+          Effect: Allow
+          Principal:
+            AWS:
+              Fn::Sub: arn:aws:iam::${AWS::AccountId}:root
+          Resource:
+          - '*'
+          Sid: Enable root IAM KMS User Permissions
+        - Action: kms:Encrypt
+          Effect: Allow
+          Principal:
+            AWS:
+              Fn::GetAtt:
+              - LambdaEncryptionRole
+              - Arn
+          Resource: '*'
+          Sid: Enable Encryption
+        - Action: kms:Decrypt
+          Effect: Allow
+          Principal:
+            AWS:
+              Fn::GetAtt:
+              - LambdaDecryptionRole
+              - Arn
+          Resource: '*'
+          Sid: Enable Decryption
+        Version: '2012-10-17'
+    Type: AWS::KMS::Key
+  LambdaDecryptionResource:
+    Properties:
+      CodeUri: s3://iyb-j2akj32rg8fmilj1-ccfe41lft1gr3l8ktf36e2bevq0dedpqkbdw8rmhw/1cc0effaa6dbd460cc25f960d155382a
+      Environment:
+        Variables:
+          SecretParam:
+            Fn::GetAtt:
+            - EncryptedSuperSecretThing
+            - CipherText
+      Handler: lambda_function.lambda_handler
+      KmsKeyArn:
+        Fn::GetAtt:
+        - KmsKeyId
+        - Arn
+      MemorySize: 128
+      Role:
+        Fn::GetAtt:
+        - LambdaDecryptionRole
+        - Arn
+      Runtime: python2.7
+      Timeout: 20
+    Type: AWS::Serverless::Function
+  LambdaDecryptionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+        Version: '2012-10-17'
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AWSLambdaExecute
+    Type: AWS::IAM::Role
+  LambdaEncryptionResource:
+    Properties:
+      CodeUri: s3://iyb-j2akj32rg8fmilj1-ccfe41lft1gr3l8ktf36e2bevq0dedpqkbdw8rmhw/143381033d1162098afe47f6fe9cdafa
+      Handler: lambda_function.lambda_handler
+      KmsKeyArn:
+        Fn::GetAtt:
+        - KmsKeyId
+        - Arn
+      MemorySize: 128
+      Role:
+        Fn::GetAtt:
+        - LambdaEncryptionRole
+        - Arn
+      Runtime: python2.7
+      Timeout: 10
+    Type: AWS::Serverless::Function
+  LambdaEncryptionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+        Version: '2012-10-17'
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AWSLambdaExecute
+    Type: AWS::IAM::Role
+Transform: AWS::Serverless-2016-10-31

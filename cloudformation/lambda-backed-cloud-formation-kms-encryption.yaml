@@ -5,7 +5,12 @@ Transform: 'AWS::Serverless-2016-10-31'
 Description: Demonstration of encryption using KMS in a CloudFormation Template
 
 Parameters:
-  SuperSecretThing:
+  SuperSecretThingKey:
+    Description: Some password or other thing that has to be secure
+    Type: 'String'
+    Default: SuperSecretThing
+
+  SuperSecretThingValue:
     Description: Some password or other thing that has to be secure
     Type: 'String'
     NoEcho: True
@@ -17,7 +22,9 @@ Resources:
     Properties:
       ServiceToken: !GetAtt LambdaEncryptionResource.Arn
       KeyId: !GetAtt KmsKeyId.Arn
-      PlainText: !Ref SuperSecretThing
+      PlainText:
+        SuperSecretThingKey: !Ref SuperSecretThingKey
+        SuperSecretThingValue: !Ref SuperSecretThingValue
 
   KmsKeyId:
     Type: 'AWS::KMS::Key'
