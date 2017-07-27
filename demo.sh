@@ -3,8 +3,6 @@ set -xe
 
 # init values
 S3_BUCKET="$(cat /dev/urandom | tr -dc 'a-z0-9-' | fold -w 63 | head -n 1)"
-AWS_DEFAULT_REGION=us-west-2
-AWS_PROFILE=jpompe
 # create s3 bucket
 aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_DEFAULT_REGION --create-bucket-configuration LocationConstraint=$AWS_DEFAULT_REGION
 # package
