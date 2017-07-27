@@ -41,7 +41,7 @@ cat /tmp/decrypted_secret.txt
 
 #### DEMO
 This demo assumes you have AWS credentials setup and you must set
-the $AWS_DEFAULT_REGION env var. Most of the resoruces created are cleaned
+the $AWS_DEFAULT_REGION env var. Most of the resources created are cleaned
 up but but leaves up the CFN stack.
 ```bash
 #!/usr/bin/env bash
